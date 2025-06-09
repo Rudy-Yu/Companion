@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rental Kompanion API</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .container {
+            background-color: #f5f5f5;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .endpoint {
+            background-color: white;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 4px;
+            border-left: 4px solid #4CAF50;
+        }
+        .method {
+            font-weight: bold;
+            color: #4CAF50;
+        }
+        .url {
+            color: #2196F3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Rental Kompanion API</h1>
+        <p>Welcome to the Rental Kompanion API. Here are the available endpoints:</p>
+        
+        <div class="endpoint">
+            <p><span class="method">GET</span> <span class="url">/api/health</span></p>
+            <p>Check API health status</p>
+        </div>
+
+        <div class="endpoint">
+            <p><span class="method">POST</span> <span class="url">/api/auth/register</span></p>
+            <p>Register a new user</p>
+        </div>
+
+        <div class="endpoint">
+            <p><span class="method">POST</span> <span class="url">/api/auth/login</span></p>
+            <p>Login user</p>
+        </div>
+
+        <div class="endpoint">
+            <p><span class="method">GET</span> <span class="url">/api/auth/me</span></p>
+            <p>Get current user profile</p>
+        </div>
+
+        <div class="endpoint">
+            <p><span class="method">POST</span> <span class="url">/api/auth/logout</span></p>
+            <p>Logout user</p>
+        </div>
+
+        <div class="endpoint">
+            <p><span class="method">GET</span> <span class="url">/api/companions</span></p>
+            <p>Get list of available companions</p>
+        </div>
+
+        <div class="endpoint">
+            <p><span class="method">GET</span> <span class="url">/api/companions/:id</span></p>
+            <p>Get companion details</p>
+        </div>
+    </div>
+</body>
+</html> 
