@@ -29,7 +29,8 @@ def register():
             email=data['email'],
             phone=data['phone'],
             password_hash=password_hash,
-            role=data['role']
+            role=data['role'],
+            description=data.get('description')  # Optional field
         )
         
         db.session.add(new_user)
@@ -40,13 +41,14 @@ def register():
             companion_profile = CompanionProfile(
                 user_id=new_user.id,
                 display_name=data['name'],
+                description=data.get('description'),  # Optional field
                 hourly_rate=50000  # Default rate
             )
             db.session.add(companion_profile)
             db.session.commit()
         
         # Buat access token
-        access_token = create_access_token(identity=new_user.id)
+        access_token = create_access_token(identity=str(new_user.id))
         
         return jsonify({
             'message': 'User registered successfully',
@@ -78,7 +80,7 @@ def login():
             return jsonify({'error': 'Invalid email or password'}), 401
         
         # Buat access token
-        access_token = create_access_token(identity=user.id)
+        access_token = create_access_token(identity=str(user.id))
         
         # Ambil companion profile jika user adalah companion
         companion_profile = None
@@ -99,7 +101,7 @@ def login():
 @jwt_required()
 def get_current_user():
     try:
-        current_user_id = get_jwt_identity()
+        current_user_id = int(get_jwt_identity())
         user = User.query.get(current_user_id)
         
         if not user:

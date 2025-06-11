@@ -5,6 +5,7 @@ from src.models.database import db, User, CompanionProfile, CompanionService
 companion_bp = Blueprint('companion', __name__)
 
 @companion_bp.route('/', methods=['GET'])
+@jwt_required()
 def get_companions():
     try:
         companions = CompanionProfile.query.filter_by(is_available=True).all()
@@ -59,8 +60,8 @@ def update_profile():
         # Update companion fields
         if 'display_name' in data:
             companion.display_name = data['display_name']
-        if 'bio' in data:
-            companion.bio = data['bio']
+        if 'description' in data:
+            companion.description = data['description']
         if 'hourly_rate' in data:
             companion.hourly_rate = data['hourly_rate']
         if 'is_available' in data:

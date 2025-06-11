@@ -98,7 +98,7 @@ function ProfileInfo() {
           <div className="space-y-4">
             <h3 className="text-lg font-semibold text-gray-900">About Me</h3>
             <div>
-              <label className="block text-sm font-medium text-gray-700">Bio</label>
+              <label className="block text-sm font-medium text-gray-700">Description</label>
               <textarea
                 name="about"
                 value={formData.about}

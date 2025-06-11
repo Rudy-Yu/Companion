@@ -6,7 +6,7 @@ try:
         host='localhost',
         user='root',
         password='',
-        database='mydb'
+        database='rental_kompanion'
     )
     
     print("Berhasil terhubung ke database!")

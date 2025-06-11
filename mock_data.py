@@ -6,8 +6,17 @@ def create_mock_data():
     """Membuat data mock untuk testing"""
     
     # Hapus data lama jika ada
-    db.drop_all()
-    db.create_all()
+    try:
+        # Delete in correct order to avoid foreign key constraints
+        Booking.query.delete()
+        CompanionService.query.delete()
+        CompanionProfile.query.delete()
+        User.query.delete()
+        db.session.commit()
+        print("Existing data cleared successfully!")
+    except Exception as e:
+        db.session.rollback()
+        print(f"Error clearing existing data: {str(e)}")
     
     # Hash password untuk semua user
     password_hash = bcrypt.hashpw('password123'.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
@@ -19,7 +28,8 @@ def create_mock_data():
         phone='081234567890',
         password_hash=password_hash,
         role='admin',
-        is_verified=True
+        is_verified=True,
+        description='Administrator sistem Rental Kompanion'
     )
     db.session.add(admin_user)
     
@@ -29,19 +39,22 @@ def create_mock_data():
             'name': 'Andi Pratama',
             'email': 'andi@example.com',
             'phone': '081234567891',
-            'role': 'user'
+            'role': 'user',
+            'description': 'Suka mencari teman baru untuk ngobrol dan berbagi cerita'
         },
         {
             'name': 'Sari Dewi',
             'email': 'sari@example.com',
             'phone': '081234567892',
-            'role': 'user'
+            'role': 'user',
+            'description': 'Pekerja kantoran yang butuh teman untuk refreshing'
         },
         {
             'name': 'Budi Santoso',
             'email': 'budi@example.com',
             'phone': '081234567893',
-            'role': 'user'
+            'role': 'user',
+            'description': 'Mahasiswa yang suka bersosialisasi dan mencari pengalaman baru'
         }
     ]
     
@@ -53,7 +66,8 @@ def create_mock_data():
             phone=user_data['phone'],
             password_hash=password_hash,
             role=user_data['role'],
-            is_verified=True
+            is_verified=True,
+            description=user_data['description']
         )
         db.session.add(user)
         regular_users.append(user)
@@ -133,7 +147,8 @@ def create_mock_data():
             phone=comp_data['phone'],
             password_hash=password_hash,
             role='companion',
-            is_verified=True
+            is_verified=True,
+            description=comp_data['description']
         )
         db.session.add(user)
         companion_users.append(user)
@@ -161,18 +176,18 @@ def create_mock_data():
     # 4. Buat Services untuk setiap companion
     services_template = [
         # Friend services
-        {'service_type': 'friend', 'service_name': 'Chat', 'price_per_hour': 30000},
-        {'service_type': 'friend', 'service_name': 'Voice Call', 'price_per_hour': 50000},
-        {'service_type': 'friend', 'service_name': 'Video Call', 'price_per_hour': 70000},
+        {'service_type': 'friend', 'service_name': 'Chat', 'price_per_hour': 30000, 'description': 'Ngobrol santai via chat'},
+        {'service_type': 'friend', 'service_name': 'Voice Call', 'price_per_hour': 50000, 'description': 'Telepon untuk berbagi cerita'},
+        {'service_type': 'friend', 'service_name': 'Video Call', 'price_per_hour': 70000, 'description': 'Video call untuk interaksi lebih personal'},
         
         # Lover services
-        {'service_type': 'lover', 'service_name': 'Chat Romantis', 'price_per_hour': 50000},
-        {'service_type': 'lover', 'service_name': 'Good Morning Text', 'price_per_day': 20000},
-        {'service_type': 'lover', 'service_name': 'Video Call Romantis', 'price_per_hour': 80000},
+        {'service_type': 'lover', 'service_name': 'Chat Romantis', 'price_per_hour': 50000, 'description': 'Chat dengan nuansa romantis'},
+        {'service_type': 'lover', 'service_name': 'Good Morning Text', 'price_per_day': 20000, 'description': 'Pesan selamat pagi setiap hari'},
+        {'service_type': 'lover', 'service_name': 'Video Call Romantis', 'price_per_hour': 80000, 'description': 'Video call dengan suasana romantis'},
         
         # Offline services
-        {'service_type': 'offline', 'service_name': 'Offline Date', 'price_per_hour': 150000},
-        {'service_type': 'offline', 'service_name': 'Event Companion', 'price_per_hour': 200000},
+        {'service_type': 'offline', 'service_name': 'Offline Date', 'price_per_hour': 150000, 'description': 'Kencan offline di tempat pilihan'},
+        {'service_type': 'offline', 'service_name': 'Event Companion', 'price_per_hour': 200000, 'description': 'Pendamping untuk acara atau event'},
     ]
     
     for companion in companion_profiles:
@@ -195,16 +210,20 @@ def create_mock_data():
                 price_per_hour=service_data.get('price_per_hour'),
                 price_per_day=service_data.get('price_per_day'),
                 is_available=True,
-                description=f"Layanan {service_data['service_name']} dari {companion.display_name}"
+                description=service_data['description']
             )
             db.session.add(service)
     
+    # Commit services dulu
+    db.session.commit()
+    
     # 5. Buat beberapa sample bookings
+    services = CompanionService.query.all()
     sample_bookings = [
         {
             'user_id': regular_users[0].id,
             'companion_id': companion_profiles[0].id,
-            'service_id': 1,  # Will be updated after services are created
+            'service_id': services[0].id if services else 1,
             'booking_date': datetime.utcnow() + timedelta(days=1),
             'duration_hours': 2,
             'total_price': 100000,
@@ -215,7 +234,7 @@ def create_mock_data():
         {
             'user_id': regular_users[1].id,
             'companion_id': companion_profiles[1].id,
-            'service_id': 2,
+            'service_id': services[1].id if len(services) > 1 else 1,
             'booking_date': datetime.utcnow() + timedelta(days=2),
             'duration_hours': 3,
             'total_price': 180000,
@@ -225,15 +244,7 @@ def create_mock_data():
         }
     ]
     
-    # Commit services dulu
-    db.session.commit()
-    
-    # Update service_id dengan ID yang benar
-    services = CompanionService.query.all()
-    for i, booking_data in enumerate(sample_bookings):
-        if i < len(services):
-            booking_data['service_id'] = services[i].id
-        
+    for booking_data in sample_bookings:
         booking = Booking(
             user_id=booking_data['user_id'],
             companion_id=booking_data['companion_id'],
@@ -257,11 +268,9 @@ def create_mock_data():
     print(f"Created {len(sample_bookings)} bookings")
     
     return {
-        'admin_user': admin_user,
-        'regular_users': regular_users,
-        'companion_users': companion_users,
-        'companion_profiles': companion_profiles,
-        'services': services,
-        'bookings': sample_bookings
+        'users_count': len(regular_users) + len(companion_users) + 1,
+        'companions_count': len(companion_profiles),
+        'services_count': len(services),
+        'bookings_count': len(sample_bookings)
     }
 
